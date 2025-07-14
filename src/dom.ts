@@ -43,6 +43,7 @@ export function computedHeight(dom: Element) {
   const computedPaddingBottom = parseFloat(computedStyle.paddingBottom)
   const computedBorderTop = parseFloat(computedStyle.borderTopWidth)
   const computedBorderBottom = parseFloat(computedStyle.borderBottomWidth)
+
   const originalLineHeight = computedHeight + computedPaddingTop + computedPaddingBottom + computedBorderTop + computedBorderBottom
 
   return originalLineHeight
@@ -114,6 +115,28 @@ function windowRect(win: Window): Rect {
 }
 
 export type ScrollStrategy = "nearest" | "start" | "end" | "center"
+
+export function getComputedScale(elt: HTMLElement) {
+  let computedStyle = getComputedStyle(elt)
+  let transform = computedStyle.transform
+  let scaleX = 1, scaleY = 1
+
+  if (transform && transform !== 'none') {
+    // Parse matrix() or matrix3d() values
+    let match = transform.match(/matrix(?:3d)?\(([^)]+)\)/)
+    if (match) {
+      let values = match[1].split(',').map(v => parseFloat(v.trim()))
+      if (values.length >= 6) {
+        // For matrix(a, b, c, d, e, f), scaleX = sqrt(a² + b²), scaleY = sqrt(c² + d²)
+        // For matrix3d, we use the first 4 values similarly
+        scaleX = Math.sqrt(values[0] * values[0] + values[1] * values[1])
+        scaleY = Math.sqrt(values[2] * values[2] + values[3] * values[3])
+      }
+    }
+  }
+
+  return {scaleX, scaleY}
+}
 
 export function getScale(elt: HTMLElement, rect: DOMRect) {
   let scaleX = rect.width / elt.offsetWidth

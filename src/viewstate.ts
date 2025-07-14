@@ -1,5 +1,5 @@
 import {Text, EditorState, ChangeSet, ChangeDesc, RangeSet, EditorSelection} from "@codemirror/state"
-import {Rect, isScrolledToBottom, getScale} from "./dom"
+import {Rect, isScrolledToBottom, getScale, getComputedScale} from "./dom"
 import {HeightMap, HeightOracle, BlockInfo, MeasuredHeights, QueryType, heightRelevantDecoChanges,
         clearHeightChangeFlag, heightChangeFlag} from "./heightmap"
 import {decorations, ViewUpdate, UpdateFlag, ChangedRange, ScrollTarget, nativeSelectionHidden,
@@ -273,7 +273,7 @@ export class ViewState {
     let result = 0, bias = 0
 
     if (domRect.width && domRect.height) {
-      let {scaleX, scaleY} = getScale(view.scrollDOM, view.scrollDOM.getBoundingClientRect())
+      let {scaleX, scaleY} = getScale(dom, domRect)
       if (scaleX > .005 && this.scaleX !== scaleX ||
           scaleY > .005 && this.scaleY !== scaleY) {
         this.scaleX = scaleX; this.scaleY = scaleY
@@ -325,7 +325,7 @@ export class ViewState {
       if (oracle.mustRefreshForHeights(lineHeights)) refresh = true
       if (refresh || oracle.lineWrapping && Math.abs(contentWidth - this.contentDOMWidth) > oracle.charWidth) {
         let {lineHeight, charWidth, textHeight} = view.docView.measureTextSize(this.scaleX, this.scaleY)
-        refresh = lineHeight > 0 && oracle.refresh(whiteSpace, lineHeight, charWidth, textHeight,
+          ;        refresh = lineHeight > 0 && oracle.refresh(whiteSpace, lineHeight, charWidth, textHeight,
                                                    Math.max(5, contentWidth / charWidth), lineHeights)
         if (refresh) {
           view.docView.minWidth = 0

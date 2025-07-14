@@ -481,7 +481,9 @@ export class DocView extends ContentView {
     this.view.observer.ignore(() => {
       this.dom.appendChild(dummy)
       let rect = clientRectsFor(dummy.firstChild!)[0]
-      lineHeight = dummy.getBoundingClientRect().height
+      const height = computedHeight(dummy)
+
+      lineHeight = height * scaleY
       charWidth = rect ? rect.width / 27 : 7
       textHeight = rect ? rect.height : lineHeight
       dummy.remove()
