@@ -273,7 +273,7 @@ export class ViewState {
     let result = 0, bias = 0
 
     if (domRect.width && domRect.height) {
-      let {scaleX, scaleY} = getScale(dom, domRect)
+      let {scaleX, scaleY} = getComputedScale(view.scrollDOM)
       if (scaleX > .005 && this.scaleX !== scaleX ||
           scaleY > .005 && this.scaleY !== scaleY) {
         this.scaleX = scaleX; this.scaleY = scaleY
