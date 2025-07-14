@@ -1,7 +1,7 @@
 import {ContentView, DOMPos, ViewFlag, noChildren, mergeChildrenInto} from "./contentview"
 import {DocView} from "./docview"
 import {TextView, MarkView, inlineDOMAtPos, joinInlineInto, coordsInChildren} from "./inlineview"
-import {clientRectsFor, Rect, flattenRect, clearAttributes} from "./dom"
+import {computedHeight, clientRectsFor, Rect, flattenRect, clearAttributes} from "./dom"
 import {LineDecoration, WidgetType, PointDecoration} from "./decoration"
 import {Attrs, combineAttrs, attrsEq, updateAttrs} from "./attributes"
 import browser from "./browser"
@@ -120,7 +120,7 @@ export class LineView extends ContentView implements BlockView {
     }
   }
 
-  measureTextSize(): {lineHeight: number, charWidth: number, textHeight: number} | null {
+  measureTextSize(scaleX: number, scaleY: number): {lineHeight: number, charWidth: number, textHeight: number} | null {
     if (this.children.length == 0 || this.length > 20) return null
     let totalWidth = 0, textHeight!: number
     for (let child of this.children) {
@@ -130,8 +130,15 @@ export class LineView extends ContentView implements BlockView {
       totalWidth += rects[0].width
       textHeight = rects[0].height
     }
+
+    const rectLineHeight = this.dom!.getBoundingClientRect().height
+
+    const height = computedHeight(this.dom!)
+
+    const lineHeight = height * scaleY
+
     return !totalWidth ? null : {
-      lineHeight: this.dom!.getBoundingClientRect().height,
+      lineHeight: lineHeight,
       charWidth: totalWidth / this.length,
       textHeight
     }

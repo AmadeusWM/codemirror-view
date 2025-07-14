@@ -55,7 +55,7 @@ export class HeightOracle {
   refresh(whiteSpace: string, lineHeight: number, charWidth: number, textHeight: number,
           lineLength: number, knownHeights: number[]): boolean {
     let lineWrapping = wrappingWhiteSpace.indexOf(whiteSpace) > -1
-    let changed = Math.round(lineHeight) != Math.round(this.lineHeight) || this.lineWrapping != lineWrapping
+    let changed = lineHeight != this.lineHeight || this.lineWrapping != lineWrapping
     this.lineWrapping = lineWrapping
     this.lineHeight = lineHeight
     this.charWidth = charWidth
@@ -332,6 +332,7 @@ class HeightMapGap extends HeightMap {
     } else {
       perLine = this.height / lines
     }
+
     return {firstLine, lastLine, perLine, perChar}
   }
 

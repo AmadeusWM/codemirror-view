@@ -116,7 +116,7 @@ export class EditorView {
   /// lot, since just putting the cursor on a word starts a
   /// composition there.
   get compositionStarted() { return !!this.inputState && this.inputState.composing >= 0 }
-  
+
   private dispatchTransactions: (trs: readonly Transaction[], view: EditorView) => void
 
   private _root: DocumentOrShadowRoot
@@ -484,7 +484,7 @@ export class EditorView {
               let diff = newAnchorHeight - scrollAnchorHeight
               if (diff > 1 || diff < -1) {
                 scrollTop = scrollTop + diff
-                sDOM.scrollTop = scrollTop / this.scaleY
+                // sDOM.scrollTop = scrollTop / this.scaleY
                 scrollAnchorHeight = -1
                 continue
               }

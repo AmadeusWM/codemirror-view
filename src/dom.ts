@@ -36,6 +36,18 @@ export function clientRectsFor(dom: Node) {
     return [] as any as DOMRectList
 }
 
+export function computedHeight(dom: Element) {
+  const computedStyle = getComputedStyle(dom)
+  const computedHeight = parseFloat(computedStyle.height)
+  const computedPaddingTop = parseFloat(computedStyle.paddingTop)
+  const computedPaddingBottom = parseFloat(computedStyle.paddingBottom)
+  const computedBorderTop = parseFloat(computedStyle.borderTopWidth)
+  const computedBorderBottom = parseFloat(computedStyle.borderBottomWidth)
+  const originalLineHeight = computedHeight + computedPaddingTop + computedPaddingBottom + computedBorderTop + computedBorderBottom
+
+  return originalLineHeight
+}
+
 // Scans forward and backward through DOM positions equivalent to the
 // given one to see if the two are in the same place (i.e. after a
 // text node vs at the end of that text node)

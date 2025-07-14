@@ -8,7 +8,8 @@ import {Decoration, DecorationSet, addRange, MarkDecoration} from "./decoration"
 import {getAttrs} from "./attributes"
 import {clientRectsFor, isEquivalentPosition, Rect, scrollRectIntoView,
         getSelection, hasSelection, textRange, DOMSelectionState,
-        textNodeBefore, textNodeAfter} from "./dom"
+        textNodeBefore, textNodeAfter,
+        computedHeight} from "./dom"
 import {ViewUpdate, decorations as decorationsFacet, outerDecorations, ChangedRange, editable,
         ScrollTarget, scrollHandler, getScrollMargins, logException, setEditContextFormatting} from "./extension"
 import {EditorView} from "./editorview"
@@ -424,8 +425,8 @@ export class DocView extends ContentView {
     return null
   }
 
-  measureVisibleLineHeights(viewport: {from: number, to: number}) {
-    let result = [], {from, to} = viewport
+  measureVisibleLineHeights(viewport: {from: number, to: number}, scaleY: number) {
+    let result: number[] = [], {from, to} = viewport
     let contentWidth = this.view.contentDOM.clientWidth
     let isWider = contentWidth > Math.max(this.view.scrollDOM.clientWidth, this.minWidth) + 1
     let widest = -1, ltr = this.view.textDirection == Direction.LTR
@@ -434,7 +435,10 @@ export class DocView extends ContentView {
       if (end > to) break
       if (pos >= from) {
         let childRect = child.dom!.getBoundingClientRect()
-        result.push(childRect.height)
+        const originalLineHeight = computedHeight(child.dom!)
+
+        const lineHeight = originalLineHeight * scaleY
+        result.push(lineHeight)
         if (isWider) {
           let last = child.dom!.lastChild
           let rects = last ? clientRectsFor(last) : []
@@ -460,13 +464,14 @@ export class DocView extends ContentView {
     return getComputedStyle(this.children[i].dom!).direction == "rtl" ? Direction.RTL : Direction.LTR
   }
 
-  measureTextSize(): {lineHeight: number, charWidth: number, textHeight: number} {
+  measureTextSize(scaleX: number, scaleY: number): {lineHeight: number, charWidth: number, textHeight: number} {
     for (let child of this.children) {
       if (child instanceof LineView) {
-        let measure = child.measureTextSize()
+        let measure = child.measureTextSize(scaleX, scaleY)
         if (measure) return measure
       }
     }
+
     // If no workable line exists, force a layout of a measurable element
     let dummy = document.createElement("div"), lineHeight!: number, charWidth!: number, textHeight!: number
     dummy.className = "cm-line"

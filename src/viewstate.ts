@@ -219,7 +219,7 @@ export class ViewState {
     let prevDeco = this.stateDeco
     this.stateDeco = this.state.facet(decorations).filter(d => typeof d != "function") as readonly DecorationSet[]
     let contentChanges = update.changedRanges
-    
+
     let heightChanges = ChangedRange.extendWithRanges(contentChanges, heightRelevantDecoChanges(
       prevDeco, this.stateDeco, update ? update.changes : ChangeSet.empty(this.state.doc.length)))
     let prevHeight = this.heightMap.height
@@ -273,9 +273,9 @@ export class ViewState {
     let result = 0, bias = 0
 
     if (domRect.width && domRect.height) {
-      let {scaleX, scaleY} = getScale(dom, domRect)
-      if (scaleX > .005 && Math.abs(this.scaleX - scaleX) > .005 ||
-          scaleY > .005 && Math.abs(this.scaleY - scaleY) > .005) {
+      let {scaleX, scaleY} = getScale(view.scrollDOM, view.scrollDOM.getBoundingClientRect())
+      if (scaleX > .005 && this.scaleX !== scaleX ||
+          scaleY > .005 && this.scaleY !== scaleY) {
         this.scaleX = scaleX; this.scaleY = scaleY
         result |= UpdateFlag.Geometry
         refresh = measureContent = true
@@ -321,10 +321,10 @@ export class ViewState {
     }
 
     if (measureContent) {
-      let lineHeights = view.docView.measureVisibleLineHeights(this.viewport)
+      let lineHeights = view.docView.measureVisibleLineHeights(this.viewport, this.scaleY)
       if (oracle.mustRefreshForHeights(lineHeights)) refresh = true
       if (refresh || oracle.lineWrapping && Math.abs(contentWidth - this.contentDOMWidth) > oracle.charWidth) {
-        let {lineHeight, charWidth, textHeight} = view.docView.measureTextSize()
+        let {lineHeight, charWidth, textHeight} = view.docView.measureTextSize(this.scaleX, this.scaleY)
         refresh = lineHeight > 0 && oracle.refresh(whiteSpace, lineHeight, charWidth, textHeight,
                                                    Math.max(5, contentWidth / charWidth), lineHeights)
         if (refresh) {
@@ -338,7 +338,7 @@ export class ViewState {
 
       clearHeightChangeFlag()
       for (let vp of this.viewports) {
-        let heights = vp.from == this.viewport.from ? lineHeights : view.docView.measureVisibleLineHeights(vp)
+        let heights = vp.from == this.viewport.from ? lineHeights : view.docView.measureVisibleLineHeights(vp, this.scaleY)
         this.heightMap = (
           refresh ? HeightMap.empty().applyChanges(this.stateDeco, Text.empty, this.heightOracle,
                                                    [new ChangedRange(0, 0, 0, view.state.doc.length)]) : this.heightMap
@@ -696,7 +696,7 @@ class BigScaler implements YScaler {
       base = vp.bottom; domBase = vp.domBottom
     }
   }
-  
+
   fromDOM(n: number) {
     for (let i = 0, base = 0, domBase = 0;; i++) {
       let vp = i < this.viewports.length ? this.viewports[i] : null
