@@ -630,10 +630,11 @@ class EditContextManager {
     for (let event in this.handlers) context.addEventListener(event as any, this.handlers[event])
 
     this.measureReq = {read: view => {
-      this.editContext.updateControlBounds(view.contentDOM.getBoundingClientRect())
-      let sel = getSelection(view.root)
-      if (sel && sel.rangeCount)
-        this.editContext.updateSelectionBounds(sel.getRangeAt(0).getBoundingClientRect())
+      // TODO: what was this suppesed to do? messed up my scroll on android tauri???
+      // this.editContext.updateControlBounds(view.contentDOM.getBoundingClientRect())
+      // let sel = getSelection(view.root)
+      // if (sel && sel.rangeCount)
+      //   this.editContext.updateSelectionBounds(sel.getRangeAt(0).getBoundingClientRect())
     }}
   }
 
