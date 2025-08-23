@@ -1,5 +1,5 @@
 {
-  "name": "@codemirror/view",
+  "name": "@euthymia/codemirror-view",
   "version": "6.38.0",
   "description": "DOM view component for the CodeMirror code editor",
   "scripts": {
