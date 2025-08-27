@@ -299,7 +299,7 @@ class HeightMapBlock extends HeightMap {
     return this
   }
 
-  toString() { return `block(${this.length}, height=${this.height})` }
+  toString() { return `block(${this.length})` }
 }
 
 class HeightMapText extends HeightMapBlock {
@@ -337,7 +337,7 @@ class HeightMapText extends HeightMapBlock {
   }
 
   toString() {
-    return `line(${this.length}${this.collapsed ? -this.collapsed : ""}${this.widgetHeight ? ":" + this.widgetHeight : ""}, height=${this.height})`
+    return `line(${this.length}${this.collapsed ? -this.collapsed : ""}${this.widgetHeight ? ":" + this.widgetHeight : ""})`
   }
 }
 
@@ -463,7 +463,7 @@ class HeightMapGap extends HeightMap {
     return this
   }
 
-  toString() { return `gap(${this.length}, height=${this.height})` }
+  toString() { return `gap(${this.length})` }
 }
 
 class HeightMapBranch extends HeightMap {
