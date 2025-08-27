@@ -116,6 +116,9 @@ export interface PluginValue extends Object {
   /// [`requestMeasure`](#view.EditorView.requestMeasure).
   docViewUpdate?(view: EditorView): void
 
+  /// Called when the scroll should be corrected
+  scrollDiffUpdate?(view: EditorView, diff: number): void
+
   /// Called when the plugin is no longer going to be used. Should
   /// revert any changes the plugin made to the DOM.
   destroy?(): void

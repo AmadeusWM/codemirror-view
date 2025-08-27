@@ -404,6 +404,16 @@ export class EditorView {
     }
   }
 
+  private scrollDiffUpdate(diff: number) {
+    for (let plugin of this.plugins) {
+      let val = plugin.value
+      if (val && val.scrollDiffUpdate) {
+        try { val.scrollDiffUpdate(this, diff) }
+        catch(e) { logException(this.state, e, "doc view update listener") }
+      }
+    }
+  }
+
   /// @internal
   measure(flush = true) {
     if (this.destroyed) return
@@ -420,7 +430,8 @@ export class EditorView {
     let updated: ViewUpdate | null = null
     let sDOM = this.scrollDOM, scrollTop = sDOM.scrollTop * this.scaleY
     let {scrollAnchorPos, scrollAnchorHeight} = this.viewState
-    if (Math.abs(scrollTop - this.viewState.scrollTop) > 1) scrollAnchorHeight = -1
+    let totalScrollDiff = 0
+    if (Math.abs(sDOM.scrollTop - this.viewState.scrollTop) > 1) scrollAnchorHeight = -1
     this.viewState.scrollAnchorHeight = -1
 
     try {
@@ -428,7 +439,7 @@ export class EditorView {
         if (scrollAnchorHeight < 0) {
           if (isScrolledToBottom(sDOM)) {
             scrollAnchorPos = -1
-            scrollAnchorHeight = this.viewState.heightMap.height
+            scrollAnchorHeight = this.viewState.heightMap.height*this.scaleY
           } else {
             let block = this.viewState.scrollAnchorAt(scrollTop)
             scrollAnchorPos = block.from
@@ -479,12 +490,13 @@ export class EditorView {
               scrollAnchorHeight = -1
               continue
             } else {
-              let newAnchorHeight = scrollAnchorPos < 0 ? this.viewState.heightMap.height :
+              let newAnchorHeight = scrollAnchorPos < 0 ? this.viewState.heightMap.height*this.scaleY :
                 this.viewState.lineBlockAt(scrollAnchorPos).top
               let diff = newAnchorHeight - scrollAnchorHeight
               if (diff > 1 || diff < -1) {
                 scrollTop = scrollTop + diff
                 // sDOM.scrollTop = scrollTop / this.scaleY
+                // totalScrollDiff += diff / this.scaleY
                 scrollAnchorHeight = -1
                 continue
               }
@@ -494,6 +506,9 @@ export class EditorView {
         }
       }
     } finally {
+      if (Math.abs(totalScrollDiff) > 1) {
+        this.scrollDiffUpdate(totalScrollDiff)
+      }
       this.updateState = UpdateState.Idle
       this.measureScheduled = -1
     }
@@ -739,7 +754,8 @@ export class EditorView {
   posAtCoords(coords: {x: number, y: number}): number | null
   posAtCoords(coords: {x: number, y: number}, precise = true): number | null {
     this.readMeasured()
-    return posAtCoords(this, coords, precise)
+    const pos = posAtCoords(this, coords, precise)
+    return pos
   }
 
   /// Get the screen coordinates at the given document position.

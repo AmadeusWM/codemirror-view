@@ -427,8 +427,8 @@ export class DocView extends ContentView {
 
   measureVisibleLineHeights(viewport: {from: number, to: number}, scaleY: number) {
     let result: number[] = [], {from, to} = viewport
-    let contentWidth = this.view.contentDOM.clientWidth
-    let isWider = contentWidth > Math.max(this.view.scrollDOM.clientWidth, this.minWidth) + 1
+    let contentWidth = this.view.contentDOM.clientWidth / scaleY // todo: should clientWidth even be scaled?
+    let isWider = contentWidth > Math.max(this.view.scrollDOM.clientWidth / scaleY, this.minWidth) + 1
     let widest = -1, ltr = this.view.textDirection == Direction.LTR
     for (let pos = 0, i = 0; i < this.children.length; i++) {
       let child = this.children[i], end = pos + child.length
@@ -437,16 +437,16 @@ export class DocView extends ContentView {
         let childRect = child.dom!.getBoundingClientRect()
         const originalLineHeight = computedHeight(child.dom!)
 
-        const lineHeight = originalLineHeight * scaleY
-        result.push(lineHeight)
+        result.push(originalLineHeight)
         if (isWider) {
           let last = child.dom!.lastChild
           let rects = last ? clientRectsFor(last) : []
           if (rects.length) {
             let rect = rects[rects.length - 1]
             let width = ltr ? rect.right - childRect.left : childRect.right - rect.left
-            if (width > widest) {
-              widest = width
+            let originalWidth = width/scaleY
+            if (originalWidth > widest) {
+              widest = originalWidth
               this.minWidth = contentWidth
               this.minWidthFrom = pos
               this.minWidthTo = end
@@ -481,11 +481,13 @@ export class DocView extends ContentView {
     this.view.observer.ignore(() => {
       this.dom.appendChild(dummy)
       let rect = clientRectsFor(dummy.firstChild!)[0]
-      const height = computedHeight(dummy)
+      const originalHeight = computedHeight(dummy)
+      const originalWidth = rect ? rect.width / scaleY : 0
+      const originalTextHeight = rect ? rect.height / scaleY : 0
 
-      lineHeight = height * scaleY
-      charWidth = rect ? rect.width / 27 : 7
-      textHeight = rect ? rect.height : lineHeight
+      lineHeight = originalHeight
+      charWidth = rect ? originalWidth / 27 : 7
+      textHeight = rect ? originalTextHeight : lineHeight
       dummy.remove()
     })
     return {lineHeight, charWidth, textHeight}

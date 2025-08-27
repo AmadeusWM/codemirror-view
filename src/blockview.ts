@@ -133,14 +133,14 @@ export class LineView extends ContentView implements BlockView {
 
     const rectLineHeight = this.dom!.getBoundingClientRect().height
 
-    const height = computedHeight(this.dom!)
-
-    const lineHeight = height * scaleY
+    const originalHeight = computedHeight(this.dom!)
+    const originalTotalWidth = totalWidth / scaleY
+    const originalTextHeight = textHeight / scaleY
 
     return !totalWidth ? null : {
-      lineHeight: lineHeight,
-      charWidth: totalWidth / this.length,
-      textHeight
+      lineHeight: originalHeight,
+      charWidth: originalTotalWidth / this.length,
+      textHeight: originalTextHeight
     }
   }
 
